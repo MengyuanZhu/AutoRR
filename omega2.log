@@ -1,0 +1,116 @@
+
+          :jGf:             .d8888b. 88d8b.d8b. .d8888b. .d8888b. .d8888b.
+        :jGDDDDf:           88'  `88 88'`88'`88 88ooood8 88'  `88 88'  `88
+      ,fDDDGjLDDDf,         88.  .88 88  88  88 88.  ... 88.  .88 88.  .88
+    ,fDDLt:   :iLDDL;       `88888P' dP  dP  dP `88888P' `8888P88 `88888P8
+  ;fDLt:         :tfDG;                                       .88
+,jft:   ,ijfffji,   :iff                                  d8888P
+     .jGDDDDDDDDDGt.      
+    ;GDDGt:''':tDDDG,          Copyright (c) 2004-2013
+   .DDDG:       :GDDG.         OpenEye Scientific Software, Inc.
+   ;DDDj         tDDDi    
+   ,DDDf         fDDD,         Version: 2.5.1.4
+    LDDDt.     .fDDDj          Built:   20130515
+    .tDDDDfjtjfDDDGt           OEChem version: 1.9.1
+      :ifGDDDDDGfi.            Platform: Ubuntu-12.04-g++4.6-x64
+          .:::.                
+  ......................       
+  DDDDDDDDDDDDDDDDDDDDDD       
+  DDDDDDDDDDDDDDDDDDDDDD       
+
+  Licensed for the exclusive use of The Laboratory of Kuby Balagurunathan.
+  Licensed for use only in University of Utha.
+  License expires on October 6, 2016.
+
+
+To cite OMEGA please use the following:
+  OMEGA 2.5.1.4: OpenEye Scientific Software, Santa Fe, NM.
+  http://www.eyesopen.com.
+
+  Hawkins, P.C.D.; Skillman, A.G.; Warren, G.L.; Ellingson, B.A.; Stahl, M.T.
+  Conformer Generation with OMEGA: Algorithm and Validation Using High
+  Quality Structures from the Protein Databank and the Cambridge 
+  Structural Database. J. Chem. Inf. Model. 2010, 50, 572-584.
+
+----------------------------------
+Title = ligand1
+Num confs = 1  elapsed time (s) = 0.18
+----------------------------------
+Title = ligand2
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand3
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand4
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand5
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand6
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand7
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand8
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand9
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand10
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand11
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand12
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand13
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand14
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand15
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand16
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand17
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand18
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand19
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand20
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand21
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand22
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand23
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand24
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Title = ligand25
+Num confs = 1  elapsed time (s) = 0.02
+----------------------------------
+Number of Molecules Processed = 25
+Number of Molecules Failed = 0
+Elapsed time (s) = 1.4
+----------------------------------
+OMEGA job complete
+Finished
