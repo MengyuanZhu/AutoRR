@@ -5,7 +5,13 @@ from rdkit.Chem import AllChem
 m=Chem.MolFromMol2File("ligand_au.mol2")
 patt=Chem.MolFromSmarts("[Au]")
 filename="result"
-f=open("hydrophobic_aromatic.lib","r")
+file1="hydrophobic_aromatic.lib"
+file2="hydrophobic.lib"
+file3="polar_negative.lib"
+file4="polar_positive.lib"
+file5="polar_uncharged.lib"
+
+f=open(file1,"r")
 
 
 w=Chem.SDWriter("results.sdf")
