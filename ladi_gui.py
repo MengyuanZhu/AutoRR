@@ -4,7 +4,11 @@ from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtGui import *
 from rdkit import Chem
 from rdkit.Chem import AllChem
+import openbabel
 
+obConversion=openbabel.OBConversion()
+
+obmol=openbabel.OBMol()
  
 # create our window
 app = QApplication(sys.argv)
@@ -98,6 +102,30 @@ def onClickOpt():
 def onClickStart():
 	global openfilename
 	global savefilename
+	global obConversion
+	if (openfilename==""):
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setText("Lead is not defined.")
+   		msg.setWindowTitle("Warning")
+  		msg.setDetailedText("Click \"Open\" button to select a lead compound.")
+   		msg.setStandardButtons(QMessageBox.Ok)
+   		msg.exec_()
+		return
+	if (savefilename==""):
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setText("Save file is not defined")
+   		msg.setWindowTitle("Warning")
+  		msg.setDetailedText("Click \"save\" button to select the save location.")
+   		msg.setStandardButtons(QMessageBox.Ok)
+   		msg.exec_()
+		return
+
+	fileextension=openfilename.split(".")[-1]	
+	print fileextension
+	return
+	obConversion.SetInAndOutFormats("pdb",cbOutput.currentText())
 	file1="hydrophobic.lib"
 	file2="hydrophobic_aromatic.lib"
 	file3="polar_negative.lib"
