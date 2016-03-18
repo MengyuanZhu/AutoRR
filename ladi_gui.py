@@ -62,7 +62,6 @@ cbOutput.addItem("mol2")
 cbOutput.addItem("sdf")
 cbOutput.addItem("mol")
 cbOutput.addItem("smi")
-cbOutput.addItem("pdb")
 cbOutput.move(120,350)
 
 #start
@@ -73,9 +72,6 @@ btnStart.move(75,390)
 #global variables
 openfilename=""
 savefilename=""
-
-
-
 
 # Create the actions 
 @pyqtSlot()
@@ -94,15 +90,20 @@ def onClickOpt():
 		radioUFF.setEnabled(True)
 		radioMMFF.setEnabled(True)
 		radioUFF.setChecked(True)
+		
 	else:
 		radioUFF.setEnabled(False)
 		radioMMFF.setEnabled(False)	
+		
 
 @pyqtSlot()
 def onClickStart():
 	global openfilename
 	global savefilename
 	global obConversion
+	
+
+	#check input file
 	if (openfilename==""):
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Warning)
@@ -112,6 +113,7 @@ def onClickStart():
    		msg.setStandardButtons(QMessageBox.Ok)
    		msg.exec_()
 		return
+	#check output file
 	if (savefilename==""):
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Warning)
@@ -122,22 +124,44 @@ def onClickStart():
    		msg.exec_()
 		return
 
-	fileextension=openfilename.split(".")[-1]	
-	print fileextension
-	return
-	obConversion.SetInAndOutFormats("pdb",cbOutput.currentText())
+	#check format
+	fileextension=openfilename.split(".")[-1]
+	supported=["mol2","sdf","mol","pdb"]		
+	if str(fileextension).lower() not in supported:
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setText("Input format not supported")
+   		msg.setWindowTitle("Warning")
+  		msg.setDetailedText("We support formats mol2, pdb, sdf and mol.")
+   		msg.setStandardButtons(QMessageBox.Ok)
+   		msg.exec_()
+
+
+   	print str(cbOutput.currentText())
+
+	obConversion.SetInAndOutFormats("pdb",str(cbOutput.currentText()))
 	file1="hydrophobic.lib"
 	file2="hydrophobic_aromatic.lib"
 	file3="polar_negative.lib"
 	file4="polar_positive.lib"
 	file5="polar_uncharged.lib"
 
-	print openfilename
-	print savefilename
-	m=Chem.MolFromMol2File(str(openfilename))
+	if str(fileextension)=="mol2":
+		m=Chem.MolFromMol2File(str(openfilename))  #readfile in mol2 format
+	if str(fileextension)=="mol":
+		m=Chem.MolFromMolFile(str(openfilename))   #readfile in mol format
+	if str(fileextension)=="pdb":
+		m=Chem.MolFromPDBFile(str(openfilename))   #readfile in pdb format
+	if str(fileextension)=="sdf":
+		suppl = SDMolSupplier(str(openfilename))
+		m= suppl.next()   						   #readfile in sdf format
+
+
+
 	patt=Chem.MolFromSmarts("[Au]")
 	
-	writer=Chem.SDWriter(str(savefilename))
+
+	writer=open(str(savefilename)+"."+str(cbOutput.currentText()),"w")
 	
 	i=1
 
@@ -165,10 +189,21 @@ def replace(m,patt,writer,i, library):
 	
 		rms=AllChem.ReplaceSubstructs(m,patt,repl)
 		rms[0].SetProp("_Name","ligand"+str(i))
-		Chem.SanitizeMol(rms[0])
+		Chem.SanitizeMol(rms[0])		
 		
-		Chem.ComputeGasteigerCharges(rms[0])
-		writer.write(rms[0])
+		smiles=Chem.MolToSmiles(rms[0]) 
+		mol=Chem.MolFromSmiles(smiles)
+		mol=Chem.AddHs(mol)
+		Chem.rdPartialCharges.ComputeGasteigerCharges(mol)
+		AllChem.EmbedMolecule(mol)
+		if (radioUFF.isChecked()):
+			AllChem.UFFOptimizeMolecule(mol)
+		if (radioMMFF.isChecked()):
+			AllChem.MMFFOptimizeMolecule(mol)
+		obConversion.ReadString(obmol, Chem.MolToPDBBlock(mol))	
+		obmol.SetTitle("ligand"+str(i))	
+		writer.write(obConversion.WriteString(obmol))
+
 		i=i+1
 		line=f.readline()
 	return i
