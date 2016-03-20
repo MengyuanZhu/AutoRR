@@ -17,7 +17,7 @@ file3="polar_negative.lib"
 file4="polar_positive.lib"
 file5="polar_uncharged.lib"
 
-f=open(file1,"r")
+f=open(file4,"r")
 
 
 w=Chem.PDBWriter("result.sdf")
@@ -31,12 +31,20 @@ while True:
 	repl=Chem.MolFromSmiles(line)
 	
 	rms=AllChem.ReplaceSubstructs(m,patt,repl)
-	rms[0].SetProp("_Name","ligand"+str(i))
-	
-	Chem.SanitizeMol(rms[0])
-	
-	Chem.rdPartialCharges.ComputeGasteigerCharges(rms[0])
 	smiles=Chem.MolToSmiles(rms[0])
+	rms=Chem.MolFromSmiles(smiles)
+	
+
+	#rms=AllChem.ReplaceSubstructs(rms,Chem.MolFromSmarts("[N;H2]"),Chem.MolFromSmiles("[NH3+]"))
+	rms=AllChem.ReplaceSubstructs(rms,Chem.MolFromSmarts("C(=O)[OH]"),Chem.MolFromSmiles("C([O-])=O"))
+
+	smiles=Chem.MolToSmiles(rms[0])
+	
+	#Chem.SanitizeMol(rms[0])
+	
+	
+	
+	#print smiles
 	mol=Chem.MolFromSmiles(smiles)
 	mol=Chem.AddHs(mol)
 	AllChem.EmbedMolecule(mol)
