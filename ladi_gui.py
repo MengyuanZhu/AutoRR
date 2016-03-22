@@ -62,6 +62,7 @@ cbOutput.addItem("mol2")
 cbOutput.addItem("sdf")
 cbOutput.addItem("mol")
 cbOutput.addItem("smi")
+cbOutput.addItem("pdbqt")
 cbOutput.move(120,350)
 
 #start
