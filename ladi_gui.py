@@ -1,20 +1,16 @@
 #!/usr/bin/python
 import sys
-from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from rdkit import Chem
 from rdkit.Chem import AllChem
 import openbabel
-
-obConversion=openbabel.OBConversion()
-
-obmol=openbabel.OBMol()
- 
+import threading
 # create our window
 app = QApplication(sys.argv)
 w = QWidget()
 w.setWindowTitle('LADI v1.0')
-w.setGeometry(50,50,230,450)
+w.setGeometry(50,50,230,490)
 
 #open and save buttons
 btnOpen = QPushButton('Open', w)
@@ -41,7 +37,7 @@ chkboxOpt=QCheckBox('Optimize 3D structure',w)
 chkboxOpt.move(5,175)
 radioUFF=QRadioButton('Universal Force Field',w)
 radioUFF.move(20,195)
-radioMMFF=QRadioButton('MMFF Field',w)
+radioMMFF=QRadioButton('MMFF Force Field',w)
 radioMMFF.move(20,215)
 radioUFF.setEnabled(False)
 radioMMFF.setEnabled(False)
@@ -65,15 +61,28 @@ cbOutput.addItem("smi")
 cbOutput.addItem("pdbqt")
 cbOutput.move(120,350)
 
+#progressbar
+lProgress=QLabel("Progress:",w)
+lProgress.move(5,385)
+pbLibrary=QProgressBar(w)
+pbLibrary.setGeometry(5,5,220,20)
+pbLibrary.setRange(0,100)
+pbLibrary.setValue(0)
+pbLibrary.move(5,405)
+
 #start
 btnStart = QPushButton('Start', w)
 btnStart.setGeometry(90,90,90,50)
-btnStart.move(75,390)
+btnStart.move(75,430)
 
 #global variables
 openfilename=""
 savefilename=""
-
+librarySize=0
+libraryDone=0
+obConversion=openbabel.OBConversion()
+obmol=openbabel.OBMol()
+mutexlock=threading.Lock()
 # Create the actions 
 @pyqtSlot()
 def onClickOpen():
@@ -95,14 +104,19 @@ def onClickOpt():
 	else:
 		radioUFF.setEnabled(False)
 		radioMMFF.setEnabled(False)	
-		
+	
+
+@pyqtSlot()
+def updateProgress(val):
+	pbLibrary.setValue(val)
+	
 
 @pyqtSlot()
 def onClickStart():
 	global openfilename
 	global savefilename
 	global obConversion
-	
+	global librarySize
 
 	#check input file
 	if (openfilename==""):
@@ -114,6 +128,7 @@ def onClickStart():
    		msg.setStandardButtons(QMessageBox.Ok)
    		msg.exec_()
 		return
+
 	#check output file
 	if (savefilename==""):
 		msg = QMessageBox()
@@ -137,9 +152,9 @@ def onClickStart():
    		msg.setStandardButtons(QMessageBox.Ok)
    		msg.exec_()
 
-
-   	print str(cbOutput.currentText())
-
+	lProgress.setText("Progress")
+   	
+	
 	obConversion.SetInAndOutFormats("pdb",str(cbOutput.currentText()))
 	file1="hydrophobic.lib"
 	file2="hydrophobic_aromatic.lib"
@@ -154,34 +169,54 @@ def onClickStart():
 	if str(fileextension)=="pdb":
 		m=Chem.MolFromPDBFile(str(openfilename))   #readfile in pdb format
 	if str(fileextension)=="sdf":
-		suppl = SDMolSupplier(str(openfilename))
-		m= suppl.next()   						   #readfile in sdf format
-
-
+		suppl = SDMolSupplier(str(openfilename))   #readfile in sdf format
+		m= suppl.next()   						   
 
 	patt=Chem.MolFromSmarts("[Au]")
-	
-
 	writer=open(str(savefilename)+"."+str(cbOutput.currentText()),"w")
+	librarySize=0
+	if chkbox1.checkState()!=0:#hydrophobic
+		librarySize=librarySize+13
+	if chkbox2.checkState()!=0:#aromatic
+		librarySize=librarySize+402
+	if chkbox3.checkState()!=0:#negative
+		librarySize=librarySize+6
+	if chkbox4.checkState()!=0:#positivie
+		librarySize=librarySize+41
+	if chkbox5.checkState()!=0:#uncharged
+		librarySize=librarySize+23
+		
+	
 	
 	i=1
-
-	if chkbox1.checkState()!=0:
-		i=replace(m,patt,writer,i, file1)
+	threads=[]
+	if chkbox1.checkState()!=0:		
+		thread1=threading.Thread(target=replace, args=(m,patt,writer,i, file1,"hydrophobic"))
+		thread1.start()
+		threads.append(thread1)
 	if chkbox2.checkState()!=0:
-		i=replace(m,patt,writer,i, file2)
+		thread2=threading.Thread(target=replace, args=(m,patt,writer,i, file2,"aromatic"))
+		thread2.start()
+		threads.append(thread2)	
 	if chkbox3.checkState()!=0:
-		i=replace(m,patt,writer,i, file3)
+		thread3=threading.Thread(target=replace, args=(m,patt,writer,i, file3,"negative"))
+		thread3.start()
+		threads.append(thread3)
 	if chkbox4.checkState()!=0:
-		i=replace(m,patt,writer,i, file4)
+		thread4=threading.Thread(target=replace, args=(m,patt,writer,i, file4,"positive"))
+		thread4.start()
+		threads.append(thread4)
 	if chkbox5.checkState()!=0:
-		i=replace(m,patt,writer,i, file5)
-
+		thread5=threading.Thread(target=replace, args=(m,patt,writer,i, file5,"uncharged"))
+		thread5.start()
+		threads.append(thread5)
 
 #molecules generation	
-def replace(m,patt,writer,i, library):
+def replace(m,patt,writer,i, library,fragmentType):
 	f=open(library,"r")
 	line=f.readline()
+	global libraryDone
+	global mutexlock
 	while True:
 		if not line:
 			break
@@ -189,7 +224,7 @@ def replace(m,patt,writer,i, library):
 		repl=Chem.MolFromSmiles(line)
 	
 		rms=AllChem.ReplaceSubstructs(m,patt,repl)
-		rms[0].SetProp("_Name","ligand"+str(i))
+		#rms[0].SetProp("_Name","ligand_"+"fragmentType"+str(i))
 		Chem.SanitizeMol(rms[0])		
 		
 		smiles=Chem.MolToSmiles(rms[0]) 
@@ -202,11 +237,18 @@ def replace(m,patt,writer,i, library):
 		if (radioMMFF.isChecked()):
 			AllChem.MMFFOptimizeMolecule(mol)
 		obConversion.ReadString(obmol, Chem.MolToPDBBlock(mol))	
-		obmol.SetTitle("ligand"+str(i))	
+		obmol.SetTitle("ligand_"+fragmentType+str(i))	
 		writer.write(obConversion.WriteString(obmol))
-
+		mutexlock.acquire()  #mutex lock for the critical section
+		libraryDone=libraryDone+1
+		mutexlock.release()
+		val=int(libraryDone*100/librarySize)
+		if (val%2==0):
+			w.emit(SIGNAL("test"),val)
 		i=i+1
 		line=f.readline()
+		
+		
 	return i
 	
 # connect the signals to the slots
@@ -214,6 +256,7 @@ btnOpen.clicked.connect(onClickOpen)
 btnSave.clicked.connect(onClickSave)
 btnStart.clicked.connect(onClickStart)
 chkboxOpt.clicked.connect(onClickOpt)
+QObject.connect(w,SIGNAL("test"),updateProgress)
 
 w.show()
 
