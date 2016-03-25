@@ -1,6 +1,14 @@
 C(=O)O
 CC(=O)O
+CCC(=O)O
 S(=O)(=O)O
 S(=O)(=O)N
 P(=O)(O)N
 C1=NN=NN1
+c1ccc(C(=O)O)cc1
+c1cc(C(=O)O)ccc1
+c1c(C(=O)O)cccc1
+[N+](=O)[O-]
+C1CC[C@H](C(=O)O)CCC1
+C1CC[C@@H](C(=O)O)CCC1
+NS(=O)(=O)O

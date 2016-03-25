@@ -2,6 +2,37 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 import openbabel
 
+
+#process aromatic
+arolink=file("aromatic-linker.lib","r")
+aroend=file("aromatic-end.lib","r")
+arocom=file("aromatic-complex.lib","r")
+arrlink=[]
+arrend=[]
+line=arolink.readline()
+while True:
+	if not line:
+		break
+	arrlink.append(line)
+	line=arolink.readline()
+line=aroend.readline()
+while True:
+	if not line:
+		break
+	arrend.append(line)
+	line=aroend.readline()
+aro=file("aromatic.lib","w")
+for link in arrlink:
+	for end in arrend:
+		aro.write(link[:len(link)-1]+end)
+line=arocom.readline()
+while True:
+	if not line:
+		break
+	aro.write(line)
+	line=arocom.readline()
+#end of process aromatic
+
 obConversion=openbabel.OBConversion()
 obConversion.SetInAndOutFormats("pdb","mol2")
 obmol=openbabel.OBMol()
@@ -11,13 +42,14 @@ obbuilder=openbabel.OBBuilder()
 m=Chem.MolFromMol2File("ligand_au.mol2")
 patt=Chem.MolFromSmarts("[Au]")
 filename="result"
-file1="hydrophobic_aromatic.lib"
+file1="aromatic.lib"
 file2="hydrophobic.lib"
 file3="polar_negative.lib"
 file4="polar_positive.lib"
 file5="polar_uncharged.lib"
+file6="aromatic-complex.lib"
 
-f=open(file4,"r")
+f=open(file6,"r")
 
 pkafile=open("pka.lib","r")
 
