@@ -12,6 +12,7 @@ c1cc(I)c(I)cc1
 c1c(I)cc(I)cc1
 c1cc(O)c(O)cc1
 c1c(O)cc(O)cc1
+c1c(O)c(O)c(O)cc1
 c1cc(Cl)c(Cl)cc1
 c1c(Cl)cc(Cl)cc1
 c1cc(Br)c(Br)cc1
@@ -36,6 +37,7 @@ c1cc(O)c(OC)cc1
 c1c(O)cc(OC)cc1
 c1cc(OC)c(O)cc1
 c1c(OC)cc(O)cc1
+c1cc(OC)c(OC)c(OC)c1
 c1c(N)cccc1
 c1cc(N)ccc1
 c1ccc(N)cc1
@@ -45,6 +47,9 @@ c1ccc(C(=O))cc1
 c1c(C(=O)O)cccc1
 c1cc(C(=O)O)ccc1
 c1ccc(C(=O)O)cc1
+c1c(C(=O)OC)cccc1
+c1cc(C(=O)OC)ccc1
+c1ccc(C(=O)OC)cc1
 c1ccncc1
 c1cncnc1
 c1ccnnc1
@@ -60,3 +65,4 @@ c1cc(c2ccccc2)ccc1
 c1ccc(c2ccccc2)cc1
 c1ccc2ccccc2c1
 c1ccc(N1CCCCC1)cc1
+c1ccc(cccc2)c2c1

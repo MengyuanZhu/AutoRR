@@ -2,7 +2,6 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 import openbabel
 
-
 #process aromatic
 arolink=file("aromatic-linker.lib","r")
 aroend=file("aromatic-end.lib","r")
@@ -57,14 +56,11 @@ line=pkafile.readline()
 pkaLib={}
 
 while True:
-	
 	if not line:
 		break
 	pkaItem=line.split(" ")
 	pkaLib[pkaItem[0]]=pkaItem[1]
 	line=pkafile.readline()
-
-
 
 line=f.readline()
 i=1
@@ -94,8 +90,6 @@ while True:
 	smiles=Chem.MolToSmiles(rms[0])
 	#Chem.SanitizeMol(rms[0])
 	
-	
-
 	mol=Chem.MolFromSmiles(smiles)
 	mol=Chem.AddHs(mol)
 	AllChem.EmbedMolecule(mol)
@@ -107,6 +101,3 @@ while True:
 	
 
 
-
-for key, value in pkaLib.items():
-	print "SB"+key+"SB"+value+"SB"

@@ -6,11 +6,12 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 import openbabel
 import threading
+
 # create our window
 app = QApplication(sys.argv)
 w = QWidget()
 w.setWindowTitle('LADI v1.0')
-w.setGeometry(50,50,230,490)
+w.setGeometry(50,50,230,440)
 
 #open and save buttons
 btnOpen = QPushButton('Open', w)
@@ -42,38 +43,34 @@ radioMMFF.move(20,215)
 radioUFF.setEnabled(False)
 radioMMFF.setEnabled(False)
 
-#partical charge
-chkboxParChar=QCheckBox('Computer partial charge \nGasteigerCharge',w)
-chkboxParChar.move(5,245)
-
 #protonation
 chkboxProt=QCheckBox('Fixpka \nBased on Evan\'s pKa table',w)
-chkboxProt.move(5,295)
+chkboxProt.move(5,245)
 
 #format
 lOutput=QLabel("Output format: ",w)
-lOutput.move(5,355)
+lOutput.move(5,305)
 cbOutput=QComboBox(w)
 cbOutput.addItem("mol2")
 cbOutput.addItem("sdf")
 cbOutput.addItem("mol")
 cbOutput.addItem("smi")
 cbOutput.addItem("pdbqt")
-cbOutput.move(120,350)
+cbOutput.move(120,300)
 
 #progressbar
 lProgress=QLabel("Progress:",w)
-lProgress.move(5,385)
+lProgress.move(5,335)
 pbLibrary=QProgressBar(w)
 pbLibrary.setGeometry(5,5,220,20)
 pbLibrary.setRange(0,100)
 pbLibrary.setValue(0)
-pbLibrary.move(5,405)
+pbLibrary.move(5,355)
 
 #start
 btnStart = QPushButton('Start', w)
 btnStart.setGeometry(90,90,90,50)
-btnStart.move(75,430)
+btnStart.move(75,380)
 
 #global variables
 openfilename=""
@@ -83,12 +80,12 @@ libraryDone=0
 obConversion=openbabel.OBConversion()
 obmol=openbabel.OBMol()
 mutexlock=threading.Lock()
-# Create the actions 
+# Create the actions
 @pyqtSlot()
 def onClickOpen():
 	global openfilename
 	openfilename=QFileDialog.getOpenFileName()
- 
+
 @pyqtSlot()
 def onClickSave():
 	global savefilename
@@ -100,16 +97,15 @@ def onClickOpt():
 		radioUFF.setEnabled(True)
 		radioMMFF.setEnabled(True)
 		radioUFF.setChecked(True)
-		
 	else:
 		radioUFF.setEnabled(False)
-		radioMMFF.setEnabled(False)	
-	
+		radioMMFF.setEnabled(False)
+
 
 @pyqtSlot()
 def updateProgress(val):
 	pbLibrary.setValue(val)
-	
+
 
 @pyqtSlot()
 def onClickStart():
@@ -142,7 +138,7 @@ def onClickStart():
 
 	#check format
 	fileextension=openfilename.split(".")[-1]
-	supported=["mol2","sdf","mol","pdb"]		
+	supported=["mol2","sdf","mol","pdb"]
 	if str(fileextension).lower() not in supported:
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Warning)
@@ -153,14 +149,52 @@ def onClickStart():
    		msg.exec_()
 
 	lProgress.setText("Progress")
-   	
-	
 	obConversion.SetInAndOutFormats("pdb",str(cbOutput.currentText()))
+
+	#library files
 	file1="hydrophobic.lib"
-	file2="hydrophobic_aromatic.lib"
+	file2="aromatic.lib"
 	file3="polar_negative.lib"
 	file4="polar_positive.lib"
 	file5="polar_uncharged.lib"
+
+	#process aromatic
+	arolink=file("aromatic-linker.lib","r")
+	aroend=file("aromatic-end.lib","r")
+	arocom=file("aromatic-complex.lib","r")
+	arrlink=[]
+	arrend=[]
+	line=arolink.readline()
+	while True:
+		if not line:
+			break
+		arrlink.append(line)
+		line=arolink.readline()
+	line=aroend.readline()
+	while True:
+		if not line:
+			break
+		arrend.append(line)
+		line=aroend.readline()
+	aro=file("aromatic.lib","w")
+	for link in arrlink:
+		for end in arrend:
+			aro.write(link[:len(link)-1]+end)
+	line=arocom.readline()
+	while True:
+		if not line:
+			break
+		aro.write(line)
+		line=arocom.readline()
+	#end of process aromatic
+
+	#calculate library sizes
+	sizeHydrophobic = sum(1 for line in open(file1))
+	sizeAromatic = sum(1 for line in open(file2))
+	sizeNegative = sum(1 for line in open(file3))
+	sizePositive = sum(1 for line in open(file4))
+	sizeUncharged = sum(1 for line in open(file5))
+
 
 	if str(fileextension)=="mol2":
 		m=Chem.MolFromMol2File(str(openfilename))  #readfile in mol2 format
@@ -170,64 +204,64 @@ def onClickStart():
 		m=Chem.MolFromPDBFile(str(openfilename))   #readfile in pdb format
 	if str(fileextension)=="sdf":
 		suppl = SDMolSupplier(str(openfilename))   #readfile in sdf format
-		m= suppl.next()   						   
+		m= suppl.next()
 
 	patt=Chem.MolFromSmarts("[Au]")
-	writer=open(str(savefilename)+"."+str(cbOutput.currentText()),"w")
+	if (str(savefilename).split(".")[-1]!=str(cbOutput.currentText())):
+		savefilename=str(savefilename)+"."+str(cbOutput.currentText())
+	writer=open(str(savefilename),"w")
 	librarySize=0
 	if chkbox1.checkState()!=0:#hydrophobic
-		librarySize=librarySize+13
+		librarySize=librarySize+sizeHydrophobic
 	if chkbox2.checkState()!=0:#aromatic
-		librarySize=librarySize+402
+		librarySize=librarySize+sizeAromatic
 	if chkbox3.checkState()!=0:#negative
-		librarySize=librarySize+6
+		librarySize=librarySize+sizeNegative
 	if chkbox4.checkState()!=0:#positivie
-		librarySize=librarySize+41
+		librarySize=librarySize+sizePositive
 	if chkbox5.checkState()!=0:#uncharged
-		librarySize=librarySize+23
-		
-	
-	
-	i=1
-	threads=[]
-	if chkbox1.checkState()!=0:		
-		thread1=threading.Thread(target=replace, args=(m,patt,writer,i, file1,"hydrophobic"))
+		librarySize=librarySize+sizeUncharged
+
+
+	if chkbox1.checkState()!=0:
+		thread1=threading.Thread(target=replace, args=(m,patt,writer,file1,"hydrophobic"))
 		thread1.start()
 		threads.append(thread1)
 	if chkbox2.checkState()!=0:
-		thread2=threading.Thread(target=replace, args=(m,patt,writer,i, file2,"aromatic"))
+		thread2=threading.Thread(target=replace, args=(m,patt,writer,file2,"aromatic"))
 		thread2.start()
-		threads.append(thread2)	
+		threads.append(thread2)
 	if chkbox3.checkState()!=0:
-		thread3=threading.Thread(target=replace, args=(m,patt,writer,i, file3,"negative"))
+		thread3=threading.Thread(target=replace, args=(m,patt,writer, file3,"negative"))
 		thread3.start()
 		threads.append(thread3)
 	if chkbox4.checkState()!=0:
-		thread4=threading.Thread(target=replace, args=(m,patt,writer,i, file4,"positive"))
+		thread4=threading.Thread(target=replace, args=(m,patt,writer, file4,"positive"))
 		thread4.start()
 		threads.append(thread4)
 	if chkbox5.checkState()!=0:
-		thread5=threading.Thread(target=replace, args=(m,patt,writer,i, file5,"uncharged"))
+		thread5=threading.Thread(target=replace, args=(m,patt,writer,file5,"uncharged"))
 		thread5.start()
 		threads.append(thread5)
 
-#molecules generation	
-def replace(m,patt,writer,i, library,fragmentType):
+#molecules generation
+def replace(m,patt,writer,library,fragmentType):
 	f=open(library,"r")
 	line=f.readline()
 	global libraryDone
 	global mutexlock
+	i=1
 	while True:
 		if not line:
 			break
-		print line	
+		print line
 		repl=Chem.MolFromSmiles(line)
-	
+
 		rms=AllChem.ReplaceSubstructs(m,patt,repl)
 		#rms[0].SetProp("_Name","ligand_"+"fragmentType"+str(i))
-		Chem.SanitizeMol(rms[0])		
-		
-		smiles=Chem.MolToSmiles(rms[0]) 
+		Chem.SanitizeMol(rms[0])
+
+		smiles=Chem.MolToSmiles(rms[0])
 		mol=Chem.MolFromSmiles(smiles)
 		mol=Chem.AddHs(mol)
 		Chem.rdPartialCharges.ComputeGasteigerCharges(mol)
@@ -236,8 +270,8 @@ def replace(m,patt,writer,i, library,fragmentType):
 			AllChem.UFFOptimizeMolecule(mol)
 		if (radioMMFF.isChecked()):
 			AllChem.MMFFOptimizeMolecule(mol)
-		obConversion.ReadString(obmol, Chem.MolToPDBBlock(mol))	
-		obmol.SetTitle("ligand_"+fragmentType+str(i))	
+		obConversion.ReadString(obmol, Chem.MolToPDBBlock(mol))
+		obmol.SetTitle("ligand_"+fragmentType+str(i))
 		writer.write(obConversion.WriteString(obmol))
 		mutexlock.acquire()  #mutex lock for the critical section
 		libraryDone=libraryDone+1
@@ -247,10 +281,7 @@ def replace(m,patt,writer,i, library,fragmentType):
 			w.emit(SIGNAL("test"),val)
 		i=i+1
 		line=f.readline()
-		
-		
-	return i
-	
+
 # connect the signals to the slots
 btnOpen.clicked.connect(onClickOpen)
 btnSave.clicked.connect(onClickSave)
