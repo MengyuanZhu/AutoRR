@@ -226,23 +226,23 @@ def onClickStart():
 	if chkbox1.checkState()!=0:
 		thread1=threading.Thread(target=replace, args=(m,patt,writer,file1,"hydrophobic"))
 		thread1.start()
-		threads.append(thread1)
+		
 	if chkbox2.checkState()!=0:
 		thread2=threading.Thread(target=replace, args=(m,patt,writer,file2,"aromatic"))
 		thread2.start()
-		threads.append(thread2)
+		
 	if chkbox3.checkState()!=0:
 		thread3=threading.Thread(target=replace, args=(m,patt,writer, file3,"negative"))
 		thread3.start()
-		threads.append(thread3)
+	
 	if chkbox4.checkState()!=0:
 		thread4=threading.Thread(target=replace, args=(m,patt,writer, file4,"positive"))
 		thread4.start()
-		threads.append(thread4)
+		
 	if chkbox5.checkState()!=0:
 		thread5=threading.Thread(target=replace, args=(m,patt,writer,file5,"uncharged"))
 		thread5.start()
-		threads.append(thread5)
+		
 
 #molecules generation
 def replace(m,patt,writer,library,fragmentType):

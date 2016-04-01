@@ -41,14 +41,14 @@ obbuilder=openbabel.OBBuilder()
 m=Chem.MolFromMol2File("ligand_au.mol2")
 patt=Chem.MolFromSmarts("[Au]")
 filename="result"
-file1="aromatic.lib"
+file1="aromatic-linker.lib"
 file2="hydrophobic.lib"
 file3="polar_negative.lib"
 file4="polar_positive.lib"
 file5="polar_uncharged.lib"
 file6="aromatic-complex.lib"
 
-f=open(file6,"r")
+f=open(file1,"r")
 
 pkafile=open("pka.lib","r")
 
