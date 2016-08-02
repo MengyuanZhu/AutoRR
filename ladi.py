@@ -48,7 +48,7 @@ file4="polar_positive.lib"
 file5="polar_uncharged.lib"
 file6="aromatic-complex.lib"
 
-f=open(file5,"r")
+f=open("aromatic-end.lib","r")
 
 pkafile=open("pka.lib","r")
 
