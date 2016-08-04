@@ -1140,6 +1140,7 @@ Cc1ccc(Cl)cn1
 c1ccc(c2cn(C)nc2)cc1
 c1ccc(c2cnn(CCO)c2)cc1
 c1ccc(c2cnn(CC(C)(C)O)c2)cc1
+OCCCN1CCC(F)(F)CC1
 c1ccc(c2cnn(CCN(C)C)c2)cc1
 c1ccc(c2cnn(CCN3CCCCC3)c2)cc1
 c1ccc(c2nc(C)n(C)c2)cc1

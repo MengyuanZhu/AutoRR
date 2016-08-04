@@ -11,7 +11,7 @@ import threading
 app = QApplication(sys.argv)
 w = QWidget()
 w.setWindowTitle('LADI v1.0')
-w.setGeometry(50,50,230,440)
+w.setGeometry(50,50,230,340)
 
 #open and save buttons
 btnOpen = QPushButton('Open', w)
@@ -33,30 +33,18 @@ chkbox4.move(20,85)
 chkbox5=QCheckBox('polar_uncharged',w)
 chkbox5.move(20,65)
 
-#optimization
-chkboxOpt=QCheckBox('Optimize 3D structure',w)
-chkboxOpt.move(5,175)
-radioUFF=QRadioButton('Universal Force Field',w)
-radioUFF.move(20,195)
-radioMMFF=QRadioButton('MMFF Force Field',w)
-radioMMFF.move(20,215)
-radioUFF.setEnabled(False)
-radioMMFF.setEnabled(False)
 
-#protonation
-chkboxProt=QCheckBox('Fixpka \nBased on Evan\'s pKa table',w)
-chkboxProt.move(5,245)
 
 #format
 lOutput=QLabel("Output format: ",w)
-lOutput.move(5,305)
+lOutput.move(5,205)
 cbOutput=QComboBox(w)
 cbOutput.addItem("mol2")
 cbOutput.addItem("sdf")
 cbOutput.addItem("mol")
 cbOutput.addItem("smi")
 cbOutput.addItem("pdbqt")
-cbOutput.move(120,300)
+cbOutput.move(120,200)
 
 #progressbar
 lProgress=QLabel("Progress:",w)
@@ -65,12 +53,12 @@ pbLibrary=QProgressBar(w)
 pbLibrary.setGeometry(5,5,220,20)
 pbLibrary.setRange(0,100)
 pbLibrary.setValue(0)
-pbLibrary.move(5,355)
+pbLibrary.move(5,255)
 
 #start
 btnStart = QPushButton('Start', w)
 btnStart.setGeometry(90,90,90,50)
-btnStart.move(75,380)
+btnStart.move(75,280)
 
 #global variables
 openfilename=""
@@ -286,7 +274,6 @@ def replace(m,patt,writer,library,fragmentType):
 btnOpen.clicked.connect(onClickOpen)
 btnSave.clicked.connect(onClickSave)
 btnStart.clicked.connect(onClickStart)
-chkboxOpt.clicked.connect(onClickOpt)
 QObject.connect(w,SIGNAL("test"),updateProgress)
 
 w.show()
