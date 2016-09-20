@@ -79,15 +79,6 @@ def onClickSave():
 	global savefilename
 	savefilename= QFileDialog.getSaveFileName()
 
-@pyqtSlot()
-def onClickOpt():
-	if (chkboxOpt.isChecked()):
-		radioUFF.setEnabled(True)
-		radioMMFF.setEnabled(True)
-		radioUFF.setChecked(True)
-	else:
-		radioUFF.setEnabled(False)
-		radioMMFF.setEnabled(False)
 
 
 @pyqtSlot()
@@ -253,11 +244,7 @@ def replace(m,patt,writer,library,fragmentType):
 		mol=Chem.MolFromSmiles(smiles)
 		mol=Chem.AddHs(mol)
 		Chem.rdPartialCharges.ComputeGasteigerCharges(mol)
-		AllChem.EmbedMolecule(mol)
-		if (radioUFF.isChecked()):
-			AllChem.UFFOptimizeMolecule(mol)
-		if (radioMMFF.isChecked()):
-			AllChem.MMFFOptimizeMolecule(mol)
+		AllChem.EmbedMolecule(mol)		
 		obConversion.ReadString(obmol, Chem.MolToPDBBlock(mol))
 		obmol.SetTitle("ligand_"+fragmentType+str(i))
 		writer.write(obConversion.WriteString(obmol))
