@@ -1,103 +1,100 @@
+#!/usr/bin/python
 from rdkit import Chem
 from rdkit.Chem import AllChem
-import openbabel
+from openeye.oechem import *
+from openeye.oeomega import *
+import sys
 
-#process aromatic
-arolink=file("aromatic-linker.lib","r")
-aroend=file("aromatic-end.lib","r")
-arocom=file("aromatic-complex.lib","r")
-arrlink=[]
-arrend=[]
-line=arolink.readline()
-while True:
-	if not line:
-		break
-	arrlink.append(line)
+def main(argv=[__name__]):
+
+	if len(argv) != 3:
+		raise ValueError("%s <infile> <outfile>" % argv[0])
+
+	#Generate aromatic library
+	#It will read linker, end and complex to generate aromatic.lib
+	arolink=file("library/aromatic-linker.lib","r")
+	aroend=file("library/aromatic-end.lib","r")
+	arocom=file("library/aromatic-complex.lib","r")
+	arrlink=[]
+	arrend=[]
 	line=arolink.readline()
-line=aroend.readline()
-while True:
-	if not line:
-		break
-	arrend.append(line)
+	while True:
+		if not line:
+			break
+		arrlink.append(line)
+		line=arolink.readline()
 	line=aroend.readline()
-aro=file("aromatic.lib","w")
-for link in arrlink:
-	for end in arrend:
-		aro.write(link[:len(link)-1]+end)
-line=arocom.readline()
-while True:
-	if not line:
-		break
-	aro.write(line)
+	while True:
+		if not line:
+			break
+		arrend.append(line)
+		line=aroend.readline()
+	aro=file("library/aromatic.lib","w")
+	for link in arrlink:
+		for end in arrend:
+			aro.write(link[:len(link)-1]+end)
 	line=arocom.readline()
-#end of process aromatic
+	while True:
+		if not line:
+			break
+		aro.write(line)
+		line=arocom.readline()
+	#end of process aromatic
 
-obConversion=openbabel.OBConversion()
-obConversion.SetInAndOutFormats("pdb","mol2")
-obmol=openbabel.OBMol()
-ff = openbabel.OBForceField.FindForceField("mmff94")
-obbuilder=openbabel.OBBuilder()
 
-m=Chem.MolFromMol2File("ligand_au.mol2")
-patt=Chem.MolFromSmarts("[Au]")
-filename="result"
-file1="aromatic-linker.lib"
-file2="hydrophobic.lib"
-file3="polar_negative.lib"
-file4="polar_positive.lib"
-file5="polar_uncharged.lib"
-file6="aromatic-complex.lib"
 
-f=open("aromatic-end.lib","r")
+	m=Chem.MolFromMol2File("example.mol2")
+	patt=Chem.MolFromSmarts("[Au]")
+	filename="result"
+	file1="library/aromatic.lib"
+	file2="library/hydrophobic.lib"
+	file3="library/polar_negative.lib"
+	file4="library/polar_positive.lib"
+	file5="library/polar_uncharged.lib"
 
-pkafile=open("pka.lib","r")
 
-line=pkafile.readline()
-pkaLib={}
+	f=open(file2,"r")
 
-while True:
-	if not line:
-		break
-	pkaItem=line.split(" ")
-	pkaLib[pkaItem[0]]=pkaItem[1]
+	pkafile=open("pka.lib","r")
+
 	line=pkafile.readline()
+	pkaLib={}
 
-line=f.readline()
-i=1
+	while True:
+		if not line:
+			break
+		pkaItem=line.split(" ")
+		pkaLib[pkaItem[0]]=pkaItem[1]
+		line=pkafile.readline()
 
-while True:
-	if not line:
-		break
-	#print line	
-	repl=Chem.MolFromSmiles(line)
-	
-	rms=AllChem.ReplaceSubstructs(m,patt,repl)
-	smiles=Chem.MolToSmiles(rms[0])
-	
-	
-	#for key, value in pkaLib.iteritems():
-	#	print
-	rms=Chem.MolFromSmiles(smiles)
-	rms=AllChem.ReplaceSubstructs(rms,Chem.MolFromSmarts("C(=O)[OH]"),Chem.MolFromSmiles("C([O-])=O"), True)
-	smiles=Chem.MolToSmiles(rms[0])
-
-	rms=Chem.MolFromSmiles(smiles)
-	rms=AllChem.ReplaceSubstructs(rms,Chem.MolFromSmarts("[N;H2;!$(Nc)]"),Chem.MolFromSmiles("[NH3+]"), True)
-	smiles=Chem.MolToSmiles(rms[0])
-
-	rms=Chem.MolFromSmiles(smiles)
-	rms=AllChem.ReplaceSubstructs(rms,Chem.MolFromSmarts("[N;H1;!$(NC=O)]"),Chem.MolFromSmiles("[NH2+]"), True)
-	smiles=Chem.MolToSmiles(rms[0])
-	#Chem.SanitizeMol(rms[0])
-	
-	mol=Chem.MolFromSmiles(smiles)
-	mol=Chem.AddHs(mol)
-	AllChem.EmbedMolecule(mol)
-	AllChem.MMFFOptimizeMolecule(mol)
-	obConversion.ReadString(obmol, Chem.MolToPDBBlock(mol))
-	print obConversion.WriteString(obmol)
-	i=i+1
 	line=f.readline()
-	
+	i=1
 
+	ofs = oemolostream()
+	if not ofs.open(argv[1]):
+		OEThrow.Fatal("Unable to open %s for writing" % argv[1])
+
+	while True:
+		if not line:
+			break
+
+		repl=Chem.MolFromSmiles(line)
+	
+		rms=AllChem.ReplaceSubstructs(m,patt,repl)
+		smiles=Chem.MolToSmiles(rms[0])
+
+		oemol=OEMol()
+		omega = OEOmega()
+		omega.SetMaxConfs(1)
+		omega.SetStrictStereo(False)	
+		if OESmilesToMol(oemol,smiles):
+			print oemol
+
+		if omega(oemol):
+			OEWriteMolecule(ofs, oemol)
+		i=i+1
+		line=f.readline()
+	
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
 
