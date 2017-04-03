@@ -8,6 +8,7 @@ import sys
 pkaLib={}
 
 libraryFile=["library/aromatic.lib","library/hydrophobic.lib","library/polar_negative.lib","library/polar_positive.lib","library/polar_uncharged.lib"]
+library=["aromatic","hydrophobic","polar_negative","polar_positive","polar_uncharged"]
 
 def preparepKa():
 	pkafile=open("pka.lib","r")
@@ -53,18 +54,22 @@ def prepareAromatic():
 def main(argv=[__name__]):
 	
 	if len(argv) != 3:
-		raise ValueError("%s <infile> <outfile>" % argv[0])
+		print("%s <infile> <outfile>" % argv[0])
+		exit()
 
 	ofs = oemolostream()
 	if not ofs.open(argv[2]):
 		OEThrow.Fatal("Unable to open %s for writing" % argv[2])
+	
+	fragmentIndex=input("Library 0: Aromatic, 1: Hydrophobic, 2: Polar Negative, 3: Polar Positive, 4: Polar Uncharged\nLibrary:")
 
-	print("Input index. 0: Aromatic, 1: Hydrophobic, 2: Polar Negative, 3: Polar Positive, 4: Polar Uncharged")
-	fragmentIndex=input()
+	numConformation=input("Maximum number of conformation:")
 	m=Chem.MolFromMol2File(argv[1])
 	patt=Chem.MolFromSmarts("[Au]")
 
 	prepareAromatic()
+
+	numFragments = sum(1 for line in open(libraryFile[fragmentIndex]))
 
 	fragmentFile=open(libraryFile[fragmentIndex],"r")
 	line=fragmentFile.readline()
@@ -82,11 +87,11 @@ def main(argv=[__name__]):
 
 		oemol=OEMol()
 		omega = OEOmega()
-		omega.SetMaxConfs(50)
+		omega.SetMaxConfs(numConformation)
 		omega.SetStrictStereo(False)	
 		if OESmilesToMol(oemol,smiles):
-			print oemol
-		oemol.SetTitle("molecule_"+str(i))
+			print str(round(100.0*i/numFragments,2))+"%"
+		oemol.SetTitle("molecule_"+library[fragmentIndex]+"_"+str(i))
 		if omega(oemol):
 			OEWriteMolecule(ofs, oemol)
 		i=i+1
