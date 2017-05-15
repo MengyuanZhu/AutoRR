@@ -61,41 +61,47 @@ def main(argv=[__name__]):
 	if not ofs.open(argv[2]):
 		OEThrow.Fatal("Unable to open %s for writing" % argv[2])
 	
-	fragmentIndex=input("Library 0: Aromatic, 1: Hydrophobic, 2: Polar Negative, 3: Polar Positive, 4: Polar Uncharged\nLibrary:")
-
+	fragmentLibrary=raw_input("Library 0: Aromatic, 1: Hydrophobic, 2: Polar Negative, 3: Polar Positive, 4: Polar Uncharged\nLibrary (use space \" \" for using more than one libraries) : ")
+	fragmentIndexList=fragmentLibrary.split(" ")
+	print(fragmentIndexList)
 	numConformation=input("Maximum number of conformation:")
 	m=Chem.MolFromMol2File(argv[1])
 	patt=Chem.MolFromSmarts("[Au]")
-
+	numFragments=0
 	prepareAromatic()
-
-	numFragments = sum(1 for line in open(libraryFile[fragmentIndex]))
-
-	fragmentFile=open(libraryFile[fragmentIndex],"r")
-	line=fragmentFile.readline()
-	
-	i=1
-
-	while True:
-		if not line:
-			break
-
-		repl=Chem.MolFromSmiles(line)
-	
-		rms=AllChem.ReplaceSubstructs(m,patt,repl)
-		smiles=Chem.MolToSmiles(rms[0])
-
-		oemol=OEMol()
-		omega = OEOmega()
-		omega.SetMaxConfs(numConformation)
-		omega.SetStrictStereo(False)	
-		if OESmilesToMol(oemol,smiles):
-			print str(round(100.0*i/numFragments,2))+"%"
-		oemol.SetTitle("molecule_"+library[fragmentIndex]+"_"+str(i))
-		if omega(oemol):
-			OEWriteMolecule(ofs, oemol)
-		i=i+1
+	for fragmentIndex in fragmentIndexList:
+		fragmentIndex=int(fragmentIndex)
+		numFragments = sum(1 for line in open(libraryFile[fragmentIndex])) + numFragments
+	percentage=1
+	for fragmentIndex in fragmentIndexList:
+		fragmentIndex=int(fragmentIndex)
+		
+		fragmentFile=open(libraryFile[fragmentIndex],"r")
 		line=fragmentFile.readline()
+	
+		i=1
+
+		while True:
+			if not line:
+				break
+
+			repl=Chem.MolFromSmiles(line)
+	
+			rms=AllChem.ReplaceSubstructs(m,patt,repl)
+			smiles=Chem.MolToSmiles(rms[0])
+
+			oemol=OEMol()
+			omega = OEOmega()
+			omega.SetMaxConfs(numConformation)
+			omega.SetStrictStereo(False)	
+			if OESmilesToMol(oemol,smiles):
+				print str(round(100.0*percentage/numFragments,2))+"%"
+			oemol.SetTitle("molecule_"+library[fragmentIndex]+"_"+str(i))
+			if omega(oemol):
+				OEWriteMolecule(ofs, oemol)
+			i=i+1
+			percentage =percentage +1
+			line=fragmentFile.readline()
 	
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
